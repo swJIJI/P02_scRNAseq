@@ -1,0 +1,5 @@
+sample_id,pdo_source,timepoint,biological_replicate,culture_batch,data_path
+naive_D1,naive,1day,rep1,D1_setup,OCM/per_sample_outs/naive_D1/count/sample_filtered_feature_bc_matrix
+naive_D7,naive,7day,rep1,D7_setup,OCM/per_sample_outs/naive_D7/count/sample_filtered_feature_bc_matrix
+FR_D1,FR,1day,rep1,D1_setup,OCM/per_sample_outs/FR_D1/count/sample_filtered_feature_bc_matrix
+FR_D7,FR,7day,rep1,D7_setup,OCM/per_sample_outs/FR_D7/count/sample_filtered_feature_bc_matrix
