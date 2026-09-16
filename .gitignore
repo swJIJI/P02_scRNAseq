@@ -1,0 +1,10 @@
+.Rhistory
+.RData
+.Rproj.user/
+data/
+results/
+*.rds
+*.h5
+*.h5ad
+*.mtx.gz
+.Renviron
