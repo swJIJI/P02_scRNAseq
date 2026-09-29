@@ -32,7 +32,7 @@ tags:
 ### Option 2
 설명.
 
-## ChatGPT suggestion
+## AI suggestion
 데이터와 분석 결과에 근거한 제안을 기록한다.
 이 항목은 최종 결정이 아니다.
 
