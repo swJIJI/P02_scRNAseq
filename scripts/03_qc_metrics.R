@@ -1,17 +1,30 @@
 # ==============================================================================
 # 03_qc_metrics.R
-# P02 (HN00262036) - QC metric calculation and filtering
-# QC 지표 계산, 분포 확인 및 승인된 QC criteria 적용
+# P02 (HN00262036) - QC metric calculation and exploration
+# QC 지표 계산, 분포 확인 및 QC cutoff 후보 비교
+#
+# NOTE:
+# 승인된 QC filtering은 04_qc_filtering.R에서 적용한다.
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
 # 0. Load packages / 패키지 불러오기
 # ------------------------------------------------------------------------------
-source("00_config.R")
+source("scripts/00_config.R")
 
 library(Seurat)
 library(dplyr)
 library(ggplot2)
+
+# p02 object가 현재 R session에 없으면 02_create_object.R을 먼저 실행한다.
+if (!exists("p02")) {
+  message(
+    "p02 object not found in the current R session. ",
+    "Running scripts/02_create_object.R first."
+  )
+  
+  source("scripts/02_create_object.R")
+}
 
 # ------------------------------------------------------------------------------
 # 1. Object 확인 / Inspect Seurat object
@@ -492,42 +505,6 @@ qc_low_count_profile <- p02@meta.data |>
 
 qc_low_count_profile
 
-
-qc_strategy_summary <- p02@meta.data %>%
-       mutate(
-             # Candidate A: conservative QC
-               candidate_A = nFeature_RNA >= 500 & percent.mt <= 20,
-             
-               # Candidate B: stricter mitochondrial cutoff
-               candidate_B = nFeature_RNA >= 500 & percent.mt <= 15,
-             
-               # Candidate C: stricter low-feature cutoff
-               candidate_C = nFeature_RNA >= 750 & percent.mt <= 20,
-             
-               # Candidate D: nCount-based rule for comparison only
-               candidate_D = nCount_RNA >= 1000 & percent.mt <= 20
-         ) %>%
-       group_by(sample_id) %>%
-       summarise(
-             n_before = n(),
-             
-               A_keep = sum(candidate_A),
-             A_keep_pct = round(mean(candidate_A) * 100, 2),
-           
-                B_keep = sum(candidate_B),
-             B_keep_pct = round(mean(candidate_B) * 100, 2),
-             
-               C_keep = sum(candidate_C),
-             C_keep_pct = round(mean(candidate_C) * 100, 2),
-             
-               D_keep = sum(candidate_D),
-             D_keep_pct = round(mean(candidate_D) * 100, 2),
-             
-               .groups = "drop"
-         )
-
-qc_strategy_summary
-
 # ------------------------------------------------------------------------------
 # 18. Compare candidate QC strategies
 #     Candidate QC criteria별 sample-wise cell retention 비교
@@ -594,38 +571,3 @@ qc_A_reason <- p02@meta.data %>%
   ungroup()
 
 qc_A_reason
-
-
-# ------------------------------------------------------------------------------
-# 20. Apply approved hard QC filters
-#     승인된 P02-specific QC criteria 적용
-#
-# Hard filters:
-#   nFeature_RNA >= QC_MIN_FEATURES
-#   percent.mt <= QC_MAX_MT
-#
-# nCount_RNA is retained as a diagnostic metric only.
-# Upper nFeature/nCount cutoffs are not applied at this stage.
-# ------------------------------------------------------------------------------
-
-qc_keep <- with(
-  p02@meta.data,
-  nFeature_RNA >= QC_MIN_FEATURES &
-    percent.mt <= QC_MAX_MT
-)
-
-p02_qc <- subset(
-  p02,
-  cells = rownames(p02@meta.data)[qc_keep]
-)
-
-
-# ------------------------------------------------------------------------------
-# 21. Validate QC-filtered object
-#     QC filtering 결과 확인
-# ------------------------------------------------------------------------------
-
-dim(p02_qc)
-
-# Number of retained cells per sample
-table(p02_qc$sample_id)
