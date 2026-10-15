@@ -8,3 +8,7 @@ results/
 *.h5ad
 *.mtx.gz
 .Renviron
+*objects/
+*figures/
+*tables/
+*report/

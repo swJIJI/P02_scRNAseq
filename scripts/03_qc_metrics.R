@@ -7,7 +7,7 @@
 # ------------------------------------------------------------------------------
 # 0. Load packages / 패키지 불러오기
 # ------------------------------------------------------------------------------
-source("00_config.R")
+source("scripts/00_config.R")
 
 library(Seurat)
 library(dplyr)
@@ -17,11 +17,12 @@ library(ggplot2)
 # 1. Object 확인 / Inspect Seurat object
 # ------------------------------------------------------------------------------
 
-# 현재 Seurat object의 크기 확인
-dim(p02)
-
-# Default assay 확인
-DefaultAssay(p02)
+p02 <- readRDS(
+  file.path(
+    OBJECT_DIR,
+    "02_p02_preQC.rds"
+  )
+)
 
 # 현재 metadata column 확인
 colnames(p02@meta.data)
@@ -528,6 +529,8 @@ qc_strategy_summary <- p02@meta.data %>%
 
 qc_strategy_summary
 
+
+
 # ------------------------------------------------------------------------------
 # 18. Compare candidate QC strategies
 #     Candidate QC criteria별 sample-wise cell retention 비교
@@ -567,6 +570,41 @@ qc_strategy_summary <- p02@meta.data %>%
   )
 
 qc_strategy_summary
+
+# ------------------------------------------------------------------------------
+# Additional evaluation: stricter nFeature_RNA >= 1000
+# 500 threshold와 비교하여 sample-specific cell loss 확인
+# ------------------------------------------------------------------------------
+
+qc_feature_1000_check <- p02@meta.data %>%
+  mutate(
+    qc_500 =
+      nFeature_RNA >= 500 &
+      percent.mt <= 20,
+    
+    qc_1000 =
+      nFeature_RNA >= 1000 &
+      percent.mt <= 20
+  ) %>%
+  group_by(sample_id) %>%
+  summarise(
+    n_before = n(),
+    
+    keep_500 = sum(qc_500),
+    keep_500_pct =
+      round(mean(qc_500) * 100, 2),
+    
+    keep_1000 = sum(qc_1000),
+    keep_1000_pct =
+      round(mean(qc_1000) * 100, 2),
+    
+    additional_removed =
+      sum(qc_500) - sum(qc_1000),
+    
+    .groups = "drop"
+  )
+
+qc_feature_1000_check
 
 
 # ------------------------------------------------------------------------------
@@ -629,3 +667,23 @@ dim(p02_qc)
 
 # Number of retained cells per sample
 table(p02_qc$sample_id)
+
+# ------------------------------------------------------------------------------
+# Save QC-filtered checkpoint object
+# 승인된 QC filtering이 완료된 Seurat object를 checkpoint로 저장
+# ------------------------------------------------------------------------------
+
+saveRDS(
+  p02_qc,
+  file = file.path(
+    OBJECT_DIR,
+    "03_p02_qc.rds"
+  )
+)
+
+file.exists(
+  file.path(
+    OBJECT_DIR,
+    "03_p02_qc.rds"
+  )
+)

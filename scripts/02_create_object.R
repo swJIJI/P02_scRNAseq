@@ -30,7 +30,7 @@
 
 source("scripts/00_config.R")
 
-set.seed(RANDOM_SEED)
+set.seed(42)
 
 
 # ------------------------------------------------------------
@@ -240,3 +240,24 @@ capture.output(
 )
 
 message("02_create_object.R completed successfully.")
+
+# ------------------------------------------------------------
+# Save checkpoint object
+# 검증 완료된 pre-QC Seurat object를 checkpoint로 저장
+# ------------------------------------------------------------
+
+saveRDS(
+  p02,
+  file = file.path(
+    OBJECT_DIR,
+    "02_p02_preQC.rds"
+  )
+)
+
+file.exists(
+  file.path(
+    OBJECT_DIR,
+    "02_p02_preQC.rds"
+  )
+)
+

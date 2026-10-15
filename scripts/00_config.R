@@ -35,8 +35,10 @@ METADATA_FILE <- "metadata/sample_metadata.csv"
 FIGURE_DIR <- "figures"
 TABLE_DIR  <- "tables"
 REPORT_DIR <- "report"
+OBJECT_DIR <- "objects"
 
-
+OBJECT_DIR
+dir.exists(OBJECT_DIR)
 
 # session information저장경로_코드 재현성을 위한 장치
 
